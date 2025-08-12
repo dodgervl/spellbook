@@ -20,6 +20,7 @@
                                         , "fantom"
                                         , "flare"
                                         , "gnosis"
+                                        , "hemi"
                                         , "ink"
                                         , "kaia"
                                         , "katana"
@@ -34,7 +35,10 @@
                                         , "solana"
                                         , "sonic"
                                         , "sophon"
+                                        , "superseed"
                                         , "opbnb"
+                                        , "tac"
+                                        , "taiko"
                                         , "unichain"
                                         , "viction"
                                         , "worldchain"
@@ -64,6 +68,7 @@ ref('prices_native_tokens')
 ,ref('prices_fantom_tokens')
 ,ref('prices_flare_tokens')
 ,ref('prices_gnosis_tokens')
+,ref('prices_hemi_tokens')
 ,ref('prices_optimism_tokens')
 ,ref('prices_polygon_tokens')
 ,ref('prices_solana_tokens')
@@ -88,7 +93,9 @@ ref('prices_native_tokens')
 ,ref('prices_sonic_tokens')
 ,ref('prices_ink_tokens')
 ,ref('prices_sophon_tokens')
+,ref('prices_tac_tokens')
 ,ref('prices_opbnb_tokens')
+,ref('prices_taiko_tokens')
 ,ref('prices_unichain_tokens')
 ,ref('prices_abstract_tokens')
 ,ref('prices_berachain_tokens')
@@ -98,6 +105,7 @@ ref('prices_native_tokens')
 ,ref('prices_lens_tokens')
 ,ref('prices_plume_tokens')
 ,ref('prices_katana_tokens')
+,ref('prices_superseed_tokens')
 ] %}
 
 
