@@ -606,6 +606,7 @@
     "fee_max_amount":   "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*10 + 1, 32))",
     "fee_min_amount":   "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*11 + 1, 32))",
     "fee_receiver":     "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*12 + 12 + 1, 20))",
+    "exclusive_resolver": "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*15 + 12 + 1, 20), substr(input, " ~ _taker_data ~ " + 32*11 + 12 + 1, 20))"
 }] %}
 {% set _taker_data = "4 + 32*2 + bytearray_to_bigint(substr(input, 4 + 32*11 + 24 + 1, 8))" %}
 {% set _recipients = "bytearray_to_bigint(substr(input, " ~ _taker_data ~ " + 32*4 + 24 + 1, 8))" %}
@@ -632,6 +633,7 @@
     "fee_max_amount":   "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*10 + 1, 32))",
     "fee_min_amount":   "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*11 + 1, 32))",
     "fee_receiver":     "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*12 + 12 + 1, 20))",
+    "exclusive_resolver": "if(" ~ _recipients ~ " > 1, substr(input, " ~ _taker_data ~ " + 32*15 + 12 + 1, 20), substr(input, " ~ _taker_data ~ " + 32*11 + 12 + 1, 20))"
 }] %}
 {% set _beginning = "4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8)) + 32*1" %}
 {% set _order_beginning = _beginning ~ " + bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 32*(x - 1) + 24 + 1, 8))" %}
@@ -661,7 +663,136 @@
     "fee_max_amount":   "if(" ~ _recipients ~ " > 1, substr(input, " ~ _order_beginning ~ " + " ~ _taker_data ~ " + 32*10 + 1, 32))",
     "fee_min_amount":   "if(" ~ _recipients ~ " > 1, substr(input, " ~ _order_beginning ~ " + " ~ _taker_data ~ " + 32*11 + 1, 32))",
     "fee_receiver":     "if(" ~ _recipients ~ " > 1, substr(input, " ~ _order_beginning ~ " + " ~ _taker_data ~ " + 32*12 + 12 + 1, 20))",
+    "exclusive_resolver":  "if(" ~ _recipients ~ " > 1, substr(input, " ~ _order_beginning ~ " + " ~ _taker_data ~ " + 32*15 + 12 + 1, 20),  substr(input, " ~ _order_beginning ~ " + " ~ _taker_data ~ " + 32*11  + 12 + 1, 20))",
 }] %}
+ --"nonce":            "substr(input, " ~ _order_info_position ~ " + 32*2 + 1, 32)",--
+{% set _beginning = "4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8)) + 32*0" %}
+{% set _number_priority_order = "bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 24 + 1, 8))" %}
+{% set _priority_order_beginning = " " ~ _beginning ~ " + 32 + bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 32 + 32*(x - 1) + 24 + 1, 8))" %}
+{% set _shift_to_signature_position = " "~_priority_order_beginning~" + bytearray_to_bigint(substr(input, "~_priority_order_beginning~" + 24 + 1, 8))" %}
+{% set _signature_position = " "~_shift_to_signature_position~" + bytearray_to_bigint(substr(input, "~_shift_to_signature_position~" + 24 + 1, 8))" %}
+{% set _shift_to_order_info_beginning = " "~_shift_to_signature_position~" + 32 + bytearray_to_bigint(substr(input, "~_shift_to_signature_position~" + 32 + 24 + 1, 8))" %}
+{% set _order_info_position = " "~_shift_to_order_info_beginning~" + bytearray_to_bigint(substr(input, "~_shift_to_order_info_beginning~" + 24 + 1, 8)) " %}
+{% set _shift_to_additional_validation_data = " " ~ _order_info_position ~ " + bytearray_to_bigint(substr(input, " ~ _order_info_position ~ " + 32*5 + 24 + 1, 8))" %}
+{% set _additional_validation_data_end_position = " " ~_shift_to_additional_validation_data~" + 32  + bytearray_to_bigint(substr(input, " ~ _shift_to_additional_validation_data ~ " + 24 + 1, 8))" %}
+{% set methods = methods + [{
+    "project":          "UniswapX",
+    "selector":         "0x13fb72c7",
+    "tag":              "'UniswapXV2V1Old'",
+    "name":             "executeBatchWithCallback",
+    "auction":          "true",
+    "event":            "0x78ad7ec0e9f89e74012afa58738b6b661c024cb0fd185ee2f616c0a28924bd66",
+    "number":           " " ~ _number_priority_order ~ " ",
+    "signature":        "substr(input, " ~ _signature_position ~ " + 1, 32)",
+    "maker_asset":      "substr(input, " ~ _shift_to_order_info_beginning ~ " + 32*4 + 12 + 1, 20)",
+    "making_amount":    "substr(input, " ~ _shift_to_order_info_beginning ~ " + 32*5 + 1, 32)",
+    "reactor":          "substr(input, " ~ _order_info_position ~ " + 32*0 + 12 + 1, 20)",
+    "maker":            "substr(input, " ~ _order_info_position ~ " + 32*1 + 12 + 1, 20)",
+    "deadline":         "substr(input, " ~ _order_info_position ~ " + 32*3 + 1, 32)",
+    "additional_validation_contract": "substr(input, " ~ _order_info_position ~ " + 32*4 + 12 + 1, 20)",
+    "nb_outputs":    "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*0+ 1, 32)",
+    "taker_asset":   "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*1 + 12 + 1, 20)", 
+    "taking_amount": "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*2 + 1, 32)", 
+    "receiver":     "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*4 + 12 + 1, 20)",
+}] %}
+{% set _beginning = "4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8)) + 32*1" %}
+{% set _order_beginning = _beginning ~ " + bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 32*(x - 1) + 24 + 1, 8))" %}
+{% set _order_beginning = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 24 + 1, 8)) + 32*1" %} --
+{% set _order_beginning = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 24 + 1, 8))" %} --_signature_position +
+{% set _order_info = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 32*0 + 24 + 1, 8))" %}
+{% set _taker_data = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 32*7 + 24 + 1, 8))" %}
+{% set methods = methods + [{
+    "project":          "UniswapX",
+    "selector":         "0x13fb72c7",
+    "tag":              "'UniswapXV2v1'",
+    "name":             "executeBatchWithCallback",
+    "auction":          "true",
+    "event":            "0x78ad7ec0e9f89e74012afa58738b6b661c024cb0fd185ee2f616c0a28924bd66",
+    "number":           "coalesce(try(bytearray_to_bigint(substr(input, " ~ _beginning ~ " - 32*1 + 24 + 1, 8))), 1)",
+    "maker":            "substr(input, " ~ _order_info ~ " + 32*1 + 12 + 1, 20)",
+    "receiver":         "substr(input, " ~ _taker_data ~ " + 32*4 + 12 + 1, 20)",
+    "maker_asset":      "substr(input, " ~ _order_beginning ~ " + 32*4  + 12 + 1, 20)",
+    "taker_asset":      "substr(input, " ~ _taker_data ~ " + 32*1 + 12 + 1, 20)",
+    "maker_max_amount": "substr(input, " ~ _order_beginning ~ " + 32*5 + 1, 32)",
+    "taker_min_amount": "substr(input, " ~ _taker_data ~ " + 32*2 + 1, 32)",
+    "deadline":         "substr(input, " ~ _order_info ~ " + 32*3 + 1, 32)",
+    "nonce":            "substr(input, " ~ _order_info ~ " + 32*2 + 1, 32)",
+}] %}
+
+{% set _beginning = "4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8)) + 32*0" %}
+{% set _number_priority_order = "bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 24 + 1, 8))" %}
+{% set _priority_order_beginning = " " ~ _beginning ~ " + 32 + bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 32 + 32*(x - 1) + 24 + 1, 8))" %}
+{% set _shift_to_signature_position = " "~_priority_order_beginning~" + bytearray_to_bigint(substr(input, "~_priority_order_beginning~" + 24 + 1, 8))" %}
+{% set _signature_position = " "~_shift_to_signature_position~" + bytearray_to_bigint(substr(input, "~_shift_to_signature_position~" + 24 + 1, 8))" %}
+{% set _shift_to_order_info_beginning = " "~_shift_to_signature_position~" + 32 + bytearray_to_bigint(substr(input, "~_shift_to_signature_position~" + 32 + 24 + 1, 8))" %}
+{% set _order_info_position = " "~_shift_to_order_info_beginning~" + bytearray_to_bigint(substr(input, "~_shift_to_order_info_beginning~" + 24 + 1, 8)) " %}
+{% set _shift_to_additional_validation_data = " " ~ _order_info_position ~ " + bytearray_to_bigint(substr(input, " ~ _order_info_position ~ " + 32*5 + 24 + 1, 8))" %}
+{% set _additional_validation_data_end_position = " " ~_shift_to_additional_validation_data~" + 32  + bytearray_to_bigint(substr(input, " ~ _shift_to_additional_validation_data ~ " + 24 + 1, 8))" %}
+{% set methods = methods + [{
+    "project":          "UniswapX",
+    "selector":         "0x13fb72c7",
+    "tag":              "'UniswapXV2V1'",
+    "name":             "executeWithCallback",
+    "auction":          "true",
+    "event":            "0x78ad7ec0e9f89e74012afa58738b6b661c024cb0fd185ee2f616c0a28924bd66",
+    "number":           " " ~ _number_priority_order ~ " ",
+    "signature":        "substr(input, " ~ _signature_position ~ " + 1, 32)",
+    "maker_asset":      "substr(input, " ~ _shift_to_order_info_beginning ~ " + 32*4 + 12 + 1, 20)",
+    "making_amount":    "substr(input, " ~ _shift_to_order_info_beginning ~ " + 32*5 + 1, 32)",
+    "reactor":          "substr(input, " ~ _order_info_position ~ " + 32*0 + 12 + 1, 20)",
+    "maker":            "substr(input, " ~ _order_info_position ~ " + 32*1 + 12 + 1, 20)",
+    "deadline":         "substr(input, " ~ _order_info_position ~ " + 32*3 + 1, 32)",
+    "additional_validation_contract": "substr(input, " ~ _order_info_position ~ " + 32*4 + 12 + 1, 20)",
+    "nb_outputs":    "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*0+ 1, 32)",
+    "taker_asset":   "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*1 + 12 + 1, 20)", 
+    "taking_amount": "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*2 + 1, 32)", 
+    "receiver":     "substr(input, " ~ _additional_validation_data_end_position ~ " + 32*4 + 12 + 1, 20)",
+}] %}
+{% set _order_beginning = "4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8))" %}
+{% set _order_beginning = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 24 + 1, 8)) + 32*1" %}
+{% set _order_beginning = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 24 + 1, 8))" %}
+{% set _order_info = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 32*0 + 24 + 1, 8))" %}
+{% set _taker_data = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 32*7 + 24 + 1, 8))" %}
+{% set methods = methods + [{
+    "project":          "UniswapX",
+    "selector":         "0x0d335884",
+    "tag":              "'UniswapXV2v1'",
+    "name":             "executeWithCallback",
+    "auction":          "true",
+    "event":            "0x78ad7ec0e9f89e74012afa58738b6b661c024cb0fd185ee2f616c0a28924bd66",
+    "maker":            "substr(input, " ~ _order_info ~ " + 32*1 + 12 + 1, 20)",
+    "maker_asset":      "substr(input, " ~ _order_beginning ~ " + 32*4  + 12 + 1, 20)",
+    "taker_asset":      "substr(input, " ~ _taker_data ~ " + 32*1 + 12 + 1, 20)",
+    "receiver":         "substr(input, " ~ _taker_data ~ " + 32*4 + 12 + 1, 20)",
+    "maker_max_amount": "substr(input, " ~ _order_beginning ~ " + 32*5 + 1, 32)",
+    "taker_max_amount": "substr(input, " ~ _taker_data ~ " + 32*2 + 1, 32)",
+    "deadline":         "substr(input, " ~ _order_info ~ " + 32*3 + 1, 32)",
+    "nonce":            "substr(input, " ~ _order_info ~ " + 32*2 + 1, 32)",
+}] %}
+{% set _beginning = "4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8)) + 32*1" %}
+{% set _order_beginning = _beginning ~ " + bytearray_to_bigint(substr(input, " ~ _beginning ~ " + 32*(x - 1) + 24 + 1, 8))" %}
+{% set _order_beginning = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 24 + 1, 8)) + 32*1" %}
+{% set _order_beginning = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 24 + 1, 8))" %}
+{% set _order_info = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 32*0 + 24 + 1, 8))" %}
+{% set _taker_data = _order_beginning ~ " + bytearray_to_bigint(substr(input, " ~ _order_beginning ~ " + 32*7 + 24 + 1, 8))" %}
+{% set methods = methods + [{
+    "project":          "UniswapX",
+    "selector":         "0x13fb72c7",
+    "tag":              "'UniswapXV2v1'",
+    "name":             "executeBatchWithCallback",
+    "auction":          "true",
+    "event":            "0x78ad7ec0e9f89e74012afa58738b6b661c024cb0fd185ee2f616c0a28924bd66",
+    "number":           "coalesce(try(bytearray_to_bigint(substr(input, 4 + bytearray_to_bigint(substr(input, 4 + 24 + 1, 8)) + 24 + 1, 8))), 1)",
+    "maker":            "substr(input, " ~ _order_info ~ " + 32*1 + 12 + 1, 20)",
+    "maker_asset":      "substr(input, " ~ _order_beginning ~ " + 32*4  + 12 + 1, 20)",
+    "taker_asset":      "substr(input, " ~ _taker_data ~ " + 32*1 + 12 + 1, 20)",
+    "receiver":         "substr(input, " ~ _taker_data ~ " + 32*4 + 12 + 1, 20)",
+    "maker_max_amount": "substr(input, " ~ _order_beginning ~ " + 32*5 + 1, 32)",
+    "taker_max_amount": "substr(input, " ~ _taker_data ~ " + 32*2 + 1, 32)",
+    "deadline":         "substr(input, " ~ _order_info ~ " + 32*3 + 1, 32)",
+    "nonce":            "substr(input, " ~ _order_info ~ " + 32*2 + 1, 32)",
+}] %}
+
 
 -- Bebop --
 

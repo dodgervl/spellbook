@@ -158,6 +158,7 @@ logs as (
                     , ('fee_min_amount',    {{ item.get("fee_min_amount", "null") }})
                     , ('fee_amount',        {{ item.get("fee_amount", "null") }})
                     , ('fee_receiver',      {{ item.get("fee_receiver", "null") }})
+                    , ('exclusive_resolver',{{ item.get("exclusive_resolver", "null") }})
                     , ('nonce',             {{ item.get("nonce", "null") }})
                     , ('order_hash',        {{ item.get("order_hash", "null") }})
                     , ('_maker_parts',      {{ item.get("_maker_parts", "0x01") }})
