@@ -332,6 +332,21 @@
     "making_amount":    "substr(output, 32*0 + 1                    , 32)",
     "taking_amount":    "substr(input, " ~ _beginning ~ " + 32*2 + 20*5 + 32*1 + 1, 32)",
 }] %}
+  -- Native V2 --
+{% set methods = methods + [{
+    "project":          "Native",
+    "selector":         "0xaf706539",
+    "tag":              "'NativeV2'",
+    "name":             "tradeRFQT",
+    "event":            "null",
+    "maker":            "substr(input, 4 + 32*2 + 12 + 1            , 20)",
+    "taker":            "substr(input, 4 + 32*3 + 12 + 1            , 20)",
+    "maker_asset":      "substr(input, 4 + 32*5 + 12 + 1            , 20)",
+    "taker_asset":      "substr(input, 4 + 32*4 + 12 + 1            , 20)",
+    "maker_max_amount": "substr(input, 4 + 32*8 + 1                 , 32)",
+    "taker_max_amount": "substr(input, 4 + 32*6 + 1                 , 32)",
+    "order_hash":       "substr(input, 4 + 32*11 + 1                , 16)",
+}] %}
 
 -- Clipper --
 
@@ -741,7 +756,7 @@
     "taker_asset":      "substr(input, 4 + 32*4 + 12 + 1        , 20)",
     "maker_max_amount": "substr(input, 4 + 32*7 + 1             , 32)",
     "taker_max_amount": "substr(input, 4 + 32*6 + 1             , 32)",
-    "taking_amount":    "substr(input, 4 + 32*12 + 1            , 32)",
+    "taking_amount":    "if(bytearray_to_uint256(substr(input, 4 + 32*12 + 1, 32)) = 0, substr(input, 4 + 32*6 + 1  , 32), substr(input, 4 + 32*12 + 1    , 32))",
     "receiver":         "substr(input, 4 + 32*8 + 12 + 1        , 20)",
     "order_hash":       "substr(input, 4 + 32*10 + 1            , 16)",
 }] %}
@@ -765,7 +780,7 @@
     "taker_asset":      "substr(input, " ~ _beginning ~ " + " ~ _taker_tokens ~ " + 32*(" ~ _taker_tokens_number ~ "+2) + 12 + 1, 20)",
     "maker_max_amount": "substr(input, " ~ _signatures ~ " - 32*3 + 1, 32)",
     "taker_max_amount": "substr(input, " ~ _beginning ~ " + " ~ _taker_amounts ~ " + 32*(" ~ _taker_amounts_number ~ "+2) + 1, 32)",
-    "taking_amount":    "substr(input, 4 + 32*2 + 1, 32)",
+    "taking_amount":    "if(bytearray_to_uint256(substr(input, 4 + 32*2 + 1, 32)) = 0, substr(input, " ~ _beginning ~ " + " ~ _taker_amounts ~ " + 32*(" ~ _taker_amounts_number ~ "+2) + 1, 32), substr(input, 4 + 32*2 + 1, 32))",
     "deadline":         "substr(input, " ~ _beginning ~ " + 32*0 + 1, 32)",
     "order_hash":       "substr(input, " ~ _beginning ~ " + 32*10 + 1, 16)",
 }] %}

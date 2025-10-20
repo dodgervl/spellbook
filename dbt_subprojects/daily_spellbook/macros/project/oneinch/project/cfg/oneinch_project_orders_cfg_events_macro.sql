@@ -99,6 +99,17 @@
             "taking_amount":    "substr(data    , 32*3 + 1              , 32)",
             "order_hash":       "substr(data    , 32*5 + 1              , 16)",
         },
+        "0xc82975a4eae9f14416813a0bd7312edf547928cd25ae9b8597ee4c92fa6862d2": {
+            "project":          "Native",
+            "name":             "RfqTrade",
+            "maker":            "substr(data    , 32*6 + 12 + 1         , 20)",
+            "taker":            "substr(data    , 32*0 + 12 + 1         , 20)",
+            "maker_asset":      "substr(data    , 32*2 + 12 + 1         , 20)",
+            "taker_asset":      "substr(data    , 32*1 + 12 + 1         , 20)",
+            "making_amount":    "substr(data    , 32*4 + 1              , 32)",
+            "taking_amount":    "substr(data    , 32*3 + 1              , 32)",
+            "order_hash":       "substr(data    , 32*5 + 1              , 16)",
+        },
         "0x0c3ca67555399daacbfbeef89219bf4eca6380fdc58f2ed80cdc0841616c5818": {
             "project":          "Native",
             "name":             "ExternalSwap",
